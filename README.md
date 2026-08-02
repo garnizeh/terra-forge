@@ -20,6 +20,9 @@ The design lives entirely in `docs/` and is the authoritative source for anythin
 | [docs/rfc/rfc-0001](docs/rfc/rfc-0001_terra-forge_product_design_specification.md) | Product spec: user journeys, domain model, non-functional requirements |
 | [docs/rfc/rfc-0002](docs/rfc/rfc-0002_terra-forge_high_level_architecture.md) | Technical architecture: technology choices, protocols, data/cache layer |
 | [docs/rfc/rfc-0003](docs/rfc/rfc-0003_terra-forge_mvp_definition.md) | **MVP scope** — what ships first and what's explicitly deferred |
+| [docs/process/dev-lifecycle.md](docs/process/dev-lifecycle.md) | Development workflow — how code moves from planning to merged PRs, the "never invent" rule, testing expectations |
+| [docs/adr/](docs/adr/) | Architecture Decision Records — rationale for *why* decisions were made, not *what* to build (RFCs remain canonical for requirements; ADRs explain reasoning and tradeoffs) |
+| [docs/tasks/](docs/tasks/) | **Planning artifacts:** per-objective task breakdowns grounded in RFCs, one task = one PR; organized by milestone and phase; refined and executed sequentially (initial task list is provisional and expected to evolve during implementation) |
 | [CLAUDE.md](CLAUDE.md) | Working summary of the above, kept current as implementation progresses |
 
 ## Project status
