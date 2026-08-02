@@ -1,0 +1,36 @@
+# --- Rust (Core Engine / Platform Server) ---
+/target/
+**/target/
+Cargo.lock.bak
+
+# --- Node / Vite (Frontend) ---
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# --- Wasm build output ---
+pkg/
+*.wasm
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Editors / OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Docker ---
+docker-compose.override.yml
