@@ -39,4 +39,4 @@ Any actual per-faction modifier values. Any asymmetric-mechanic design — RFC-0
 ## Status
 
 In review
-**PR:** (pending)
+**PR:** [#4](https://github.com/garnizeh/terra-forge/pull/4)
