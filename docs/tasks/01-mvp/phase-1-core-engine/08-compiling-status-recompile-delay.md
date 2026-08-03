@@ -32,5 +32,5 @@ The `Attack` resolution that triggers a capture (task 1.5). Unit-generation math
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** [#9](https://github.com/garnizeh/terra-forge/pull/9)
