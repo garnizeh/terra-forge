@@ -32,5 +32,5 @@ None — first task in Phase 1.
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** [#2](https://github.com/garnizeh/terra-forge/pull/2)
