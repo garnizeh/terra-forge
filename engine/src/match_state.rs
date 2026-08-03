@@ -112,9 +112,12 @@ impl MatchState {
     /// and compiled out of non-test builds.
     #[cfg(test)]
     pub(crate) fn mark_released_for_test(&mut self, player_id: PlayerId) {
-        if let Some(slot) = self.players.iter_mut().find(|slot| slot.id == player_id) {
-            slot.released = true;
-        }
+        let slot = self
+            .players
+            .iter_mut()
+            .find(|slot| slot.id == player_id)
+            .expect("mark_released_for_test called with a non-seated player_id");
+        slot.released = true;
     }
 
     pub fn fortify_used(&self) -> bool {

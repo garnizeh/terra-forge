@@ -34,6 +34,7 @@ pub const MINIMUM_GARRISON: u32 = 1;
 /// specificity for optimistic UI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LegalityError {
+    WrongActionType,
     NotActivePlayer,
     WrongPhase,
     MissingTarget,
@@ -43,6 +44,7 @@ pub enum LegalityError {
     TerritoryNotCompiling,
     NotAdjacent,
     TargetOwnedByActor,
+    SourceIsTarget,
     NoContiguousPath,
     FortifyAlreadyUsed,
     ZeroUnitCount,
@@ -66,7 +68,9 @@ pub fn validate_deploy(
     territories: &[Territory],
     pool: &UnitPool,
 ) -> Result<(), LegalityError> {
-    debug_assert_eq!(action.action_type, ActionType::Deploy);
+    if action.action_type != ActionType::Deploy {
+        return Err(LegalityError::WrongActionType);
+    }
 
     if match_state.active_player() != action.actor_id {
         return Err(LegalityError::NotActivePlayer);
@@ -112,7 +116,9 @@ pub fn validate_attack(
     match_state: &MatchState,
     territories: &[Territory],
 ) -> Result<(), LegalityError> {
-    debug_assert_eq!(action.action_type, ActionType::Attack);
+    if action.action_type != ActionType::Attack {
+        return Err(LegalityError::WrongActionType);
+    }
 
     if match_state.active_player() != action.actor_id {
         return Err(LegalityError::NotActivePlayer);
@@ -166,7 +172,9 @@ pub fn validate_fortify(
     match_state: &MatchState,
     territories: &[Territory],
 ) -> Result<(), LegalityError> {
-    debug_assert_eq!(action.action_type, ActionType::Fortify);
+    if action.action_type != ActionType::Fortify {
+        return Err(LegalityError::WrongActionType);
+    }
 
     if match_state.active_player() != action.actor_id {
         return Err(LegalityError::NotActivePlayer);
@@ -196,6 +204,10 @@ pub fn validate_fortify(
     }
     if target.status != TerritoryStatus::Active {
         return Err(LegalityError::TerritoryNotActive);
+    }
+
+    if action.source_territory_id == target_id {
+        return Err(LegalityError::SourceIsTarget);
     }
 
     if !territories_connected(
@@ -274,7 +286,9 @@ pub fn validate_concede(
     action: &GameAction,
     match_state: &MatchState,
 ) -> Result<(), LegalityError> {
-    debug_assert_eq!(action.action_type, ActionType::Concede);
+    if action.action_type != ActionType::Concede {
+        return Err(LegalityError::WrongActionType);
+    }
 
     if !match_state.is_participant(action.actor_id) {
         return Err(LegalityError::NotAParticipant);
@@ -297,7 +311,9 @@ pub fn validate_accelerate_compile(
     territories: &[Territory],
     pool: &UnitPool,
 ) -> Result<(), LegalityError> {
-    debug_assert_eq!(action.action_type, ActionType::AccelerateCompile);
+    if action.action_type != ActionType::AccelerateCompile {
+        return Err(LegalityError::WrongActionType);
+    }
 
     if match_state.active_player() != action.actor_id {
         return Err(LegalityError::NotActivePlayer);
@@ -564,6 +580,22 @@ mod tests {
         assert_eq!(
             validate_deploy(&deploy_action(p0, t0, 3), &state, &[], &pool),
             Err(LegalityError::UnknownTerritory)
+        );
+    }
+
+    #[test]
+    fn deploy_wrong_action_type() {
+        let p0 = player(1);
+        let t0 = territory_id(1);
+        let state = MatchState::new(vec![p0]);
+        let territories = vec![territory(t0, Some(p0), TerritoryStatus::Active, 0, vec![])];
+        let pool = UnitPool::new(5);
+        let mut action = deploy_action(p0, t0, 3);
+        action.action_type = ActionType::Attack;
+
+        assert_eq!(
+            validate_deploy(&action, &state, &territories, &pool),
+            Err(LegalityError::WrongActionType)
         );
     }
 
@@ -849,6 +881,84 @@ mod tests {
         );
     }
 
+    #[test]
+    fn attack_unknown_source_territory() {
+        let p0 = player(1);
+        let source_id = territory_id(1);
+        let target_id = territory_id(2);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        let territories = vec![territory(
+            target_id,
+            None,
+            TerritoryStatus::Active,
+            2,
+            vec![],
+        )];
+
+        assert_eq!(
+            validate_attack(
+                &attack_action(p0, source_id, target_id, 4),
+                &state,
+                &territories
+            ),
+            Err(LegalityError::UnknownTerritory)
+        );
+    }
+
+    #[test]
+    fn attack_missing_target() {
+        let p0 = player(1);
+        let source_id = territory_id(1);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        let territories = vec![territory(
+            source_id,
+            Some(p0),
+            TerritoryStatus::Active,
+            5,
+            vec![],
+        )];
+        let action = GameAction {
+            action_type: ActionType::Attack,
+            actor_id: p0,
+            source_territory_id: source_id,
+            target_territory_id: None,
+            unit_count: 4,
+        };
+
+        assert_eq!(
+            validate_attack(&action, &state, &territories),
+            Err(LegalityError::MissingTarget)
+        );
+    }
+
+    #[test]
+    fn attack_wrong_action_type() {
+        let p0 = player(1);
+        let source_id = territory_id(1);
+        let target_id = territory_id(2);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        let territories = vec![
+            territory(
+                source_id,
+                Some(p0),
+                TerritoryStatus::Active,
+                5,
+                vec![target_id],
+            ),
+            territory(target_id, None, TerritoryStatus::Active, 2, vec![]),
+        ];
+        let mut action = attack_action(p0, source_id, target_id, 4);
+        action.action_type = ActionType::Deploy;
+
+        assert_eq!(
+            validate_attack(&action, &state, &territories),
+            Err(LegalityError::WrongActionType)
+        );
+    }
+
     // ---- Fortify ----
 
     #[test]
@@ -1074,6 +1184,92 @@ mod tests {
     }
 
     #[test]
+    fn fortify_source_not_owner() {
+        let p0 = player(1);
+        let p1 = player(2);
+        let source_id = territory_id(1);
+        let target_id = territory_id(2);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        state.advance();
+        let territories = vec![
+            territory(
+                source_id,
+                Some(p1),
+                TerritoryStatus::Active,
+                5,
+                vec![target_id],
+            ),
+            territory(
+                target_id,
+                Some(p0),
+                TerritoryStatus::Active,
+                1,
+                vec![source_id],
+            ),
+        ];
+
+        assert_eq!(
+            validate_fortify(
+                &fortify_action(p0, source_id, target_id, 3),
+                &state,
+                &territories
+            ),
+            Err(LegalityError::NotOwner)
+        );
+    }
+
+    #[test]
+    fn fortify_target_compiling() {
+        let p0 = player(1);
+        let source_id = territory_id(1);
+        let target_id = territory_id(2);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        state.advance();
+        let territories = vec![
+            territory(
+                source_id,
+                Some(p0),
+                TerritoryStatus::Active,
+                5,
+                vec![target_id],
+            ),
+            territory(
+                target_id,
+                Some(p0),
+                TerritoryStatus::Compiling,
+                1,
+                vec![source_id],
+            ),
+        ];
+
+        assert_eq!(
+            validate_fortify(
+                &fortify_action(p0, source_id, target_id, 3),
+                &state,
+                &territories
+            ),
+            Err(LegalityError::TerritoryNotActive)
+        );
+    }
+
+    #[test]
+    fn fortify_source_is_target() {
+        let p0 = player(1);
+        let t0 = territory_id(1);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        state.advance();
+        let territories = vec![territory(t0, Some(p0), TerritoryStatus::Active, 5, vec![])];
+
+        assert_eq!(
+            validate_fortify(&fortify_action(p0, t0, t0, 2), &state, &territories),
+            Err(LegalityError::SourceIsTarget)
+        );
+    }
+
+    #[test]
     fn fortify_exceeds_garrison() {
         let p0 = player(1);
         let source_id = territory_id(1);
@@ -1108,6 +1304,39 @@ mod tests {
                 requested: 5,
                 max_allowed: 4,
             })
+        );
+    }
+
+    #[test]
+    fn fortify_wrong_action_type() {
+        let p0 = player(1);
+        let source_id = territory_id(1);
+        let target_id = territory_id(2);
+        let mut state = MatchState::new(vec![p0]);
+        state.advance();
+        state.advance();
+        let territories = vec![
+            territory(
+                source_id,
+                Some(p0),
+                TerritoryStatus::Active,
+                5,
+                vec![target_id],
+            ),
+            territory(
+                target_id,
+                Some(p0),
+                TerritoryStatus::Active,
+                1,
+                vec![source_id],
+            ),
+        ];
+        let mut action = fortify_action(p0, source_id, target_id, 3);
+        action.action_type = ActionType::Attack;
+
+        assert_eq!(
+            validate_fortify(&action, &state, &territories),
+            Err(LegalityError::WrongActionType)
         );
     }
 
@@ -1147,6 +1376,19 @@ mod tests {
         assert_eq!(
             validate_concede(&concede_action(p0), &state),
             Err(LegalityError::AlreadyReleased)
+        );
+    }
+
+    #[test]
+    fn concede_wrong_action_type() {
+        let p0 = player(1);
+        let state = MatchState::new(vec![p0]);
+        let mut action = concede_action(p0);
+        action.action_type = ActionType::Deploy;
+
+        assert_eq!(
+            validate_concede(&action, &state),
+            Err(LegalityError::WrongActionType)
         );
     }
 
@@ -1314,6 +1556,28 @@ mod tests {
         assert_eq!(
             validate_accelerate_compile(&action, &state, &[], &pool),
             Err(LegalityError::MissingTarget)
+        );
+    }
+
+    #[test]
+    fn accelerate_compile_wrong_action_type() {
+        let p0 = player(1);
+        let t0 = territory_id(1);
+        let state = MatchState::new(vec![p0]);
+        let territories = vec![territory(
+            t0,
+            Some(p0),
+            TerritoryStatus::Compiling,
+            0,
+            vec![],
+        )];
+        let pool = UnitPool::new(5);
+        let mut action = accelerate_action(p0, t0, ACCELERATE_COMPILE_COST);
+        action.action_type = ActionType::Deploy;
+
+        assert_eq!(
+            validate_accelerate_compile(&action, &state, &territories, &pool),
+            Err(LegalityError::WrongActionType)
         );
     }
 }
