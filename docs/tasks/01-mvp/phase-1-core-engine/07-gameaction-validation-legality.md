@@ -35,5 +35,5 @@ Session/actor-identity authorization — confirming the `actor_id` genuinely bel
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** [#8](https://github.com/garnizeh/terra-forge/pull/8)
