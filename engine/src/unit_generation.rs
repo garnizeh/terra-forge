@@ -25,11 +25,10 @@ pub fn calculate_generation(
         .filter(|t| t.owner_id == Some(player_id) && t.status == TerritoryStatus::Active)
         .count() as u32;
 
-    let continent_bonus: u32 = continents
+    let continent_bonus = continents
         .iter()
         .filter(|c| continent_fully_controlled(c.id, player_id, territories))
-        .map(|c| c.control_bonus)
-        .sum();
+        .fold(0u32, |acc, c| acc.saturating_add(c.control_bonus));
 
     territory_count.saturating_add(continent_bonus)
 }
@@ -69,7 +68,12 @@ pub struct InsufficientUnitsError {
 /// structurally — a caller constructs a fresh `UnitPool::new(generated)` on
 /// entering the phase and discards the previous instance; there is no
 /// `reset` method.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+///
+/// Deliberately not `Copy`: this represents one shared, mutable balance for
+/// the phase, and callers (task 1.7/1.8) must hold and mutate a single
+/// instance by reference (or explicit `.clone()`, never implicitly) so a
+/// `consume` deduction is visible to every consumer of the same pool.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnitPool {
     remaining: u32,
 }
