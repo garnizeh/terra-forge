@@ -47,3 +47,10 @@ Nothing gets built, named, or architected beyond what's explicitly planned in an
 - Wait for an explicit decision before proceeding.
 
 This applies to scope, architecture/library choices, naming, and anything else not already written down and approved.
+
+## 6. Dependency and library currency — Context7
+
+Before introducing any new dependency — a Cargo crate, an npm package, a GitHub Action, a CLI tool — or writing code against the API of one already in use, check current docs and versions with the Context7 MCP tool rather than relying on training data. Training data goes stale, and this project has already hit real drift from it (e.g. the wasm-pack installer's upstream GitHub org moved in 2025, after `rustwasm` was archived).
+
+- Applies whenever a task introduces or touches a dependency, not just at review time.
+- Doesn't relax the "never invent" rule in §5: confirming a library's current version/API is about correctness, not license to add dependencies beyond what a task doc calls for.
