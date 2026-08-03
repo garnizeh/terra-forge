@@ -38,5 +38,5 @@ Invoking this function from an `Attack` `GameAction` (task 1.7 owns the validati
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** [#6](https://github.com/garnizeh/terra-forge/pull/6)
