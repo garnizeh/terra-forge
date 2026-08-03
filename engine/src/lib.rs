@@ -13,6 +13,7 @@
 //!   phases, never deadlines.
 
 pub mod combat;
+pub mod compiling;
 pub mod faction_modifiers;
 pub mod legality;
 pub mod match_state;
