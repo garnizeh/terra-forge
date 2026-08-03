@@ -16,3 +16,4 @@ pub mod combat;
 pub mod faction_modifiers;
 pub mod match_state;
 pub mod protocol;
+pub mod unit_generation;
