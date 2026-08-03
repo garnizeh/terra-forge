@@ -13,10 +13,20 @@ Thread a `FactionModifiers` lookup parameter through the rule functions that nee
 
 ## Acceptance criteria
 
-- [ ] `FactionModifiers` type defined as a lookup keyed by `Faction` (e.g. a `HashMap<Faction, ModifierSet>` or an array indexed by enum discriminant), with fields limited to exactly what task 1.5's combat resolution needs to read — nothing speculative beyond that.
-- [ ] A `FactionModifiers::uniform()` (or `Default`) constructor produces a table where every `Faction` maps to an identical, neutral `ModifierSet` — the only table Phase 1 ships.
-- [ ] Every rule function whose output could plausibly depend on faction (combat resolution at minimum) takes `&FactionModifiers` as an explicit parameter instead of hardcoding faction-agnostic math inline.
-- [ ] A unit test asserts combat outcomes are bit-identical regardless of which `Faction` is passed in, when using the uniform table — proving the no-op table is genuinely a no-op rather than accidentally asymmetric.
+- [x] `FactionModifiers` type defined as a lookup keyed by `Faction` (e.g. a `HashMap<Faction, ModifierSet>` or an array indexed by enum discriminant), with fields limited to exactly what task 1.5's combat resolution needs to read — nothing speculative beyond that.
+- [x] A `FactionModifiers::uniform()` (or `Default`) constructor produces a table where every `Faction` maps to an identical, neutral `ModifierSet` — the only table Phase 1 ships.
+- [~] Every rule function whose output could plausibly depend on faction (combat resolution at minimum) takes `&FactionModifiers` as an explicit parameter instead of hardcoding faction-agnostic math inline. **Not yet applicable:** no rule-evaluation function exists in the crate at this point in the build order (tasks 1.4–1.9 are all "Not started"); combat resolution itself is task 1.5, which depends back on this task's seam. See Notes.
+- [~] A unit test asserts combat outcomes are bit-identical regardless of which `Faction` is passed in, when using the uniform table — proving the no-op table is genuinely a no-op rather than accidentally asymmetric. **Substituted for now:** `resolve_combat` doesn't exist yet, so the test instead asserts the uniform table itself returns an identical `ModifierSet` for every `Faction` — the same property, checked at the seam rather than through a combat call that can't exist yet. See Notes.
+
+## Notes (scope decision made during implementation)
+
+CLAUDE.md's build order is explicit that later phases assume earlier ones are solid — task 1.5 (combat resolution) has its own unresolved open questions (the attrition formula itself, and where a territory's defense bonus comes from) that this task must not preempt. So this task ships only what task 1.2's `Faction` enum makes possible today:
+
+- `ModifierSet` is an empty struct (`engine::faction_modifiers::ModifierSet`) — no rule function reads a field from it yet, so no field is speculatively added.
+- `FactionModifiers` is a lookup from every `Faction` to a `ModifierSet`, with a `uniform()` constructor (and matching `Default` impl) producing identical entries for all four factions.
+- The bit-identical-outcome test is expressed as "every faction's looked-up `ModifierSet` is `==` the others" rather than a `resolve_combat` call, since that function doesn't exist yet.
+
+AC #3 and #4 above are marked `[~]` (not fully applicable yet, not skipped) rather than `[x]`: task 1.5 is expected to close them for real by actually threading `&FactionModifiers` through `resolve_combat` and testing combat outcomes directly, per its own acceptance criteria which already reference "task 1.3's seam."
 
 ## Out of scope
 
@@ -28,5 +38,5 @@ Any actual per-faction modifier values. Any asymmetric-mechanic design — RFC-0
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** (pending)
