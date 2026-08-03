@@ -13,16 +13,22 @@ Model [RFC-001 §7](../../../rfc/rfc-0001_terra-forge_product_design_specificati
 
 ## Acceptance criteria
 
-- [ ] `Territory { id, continent_id, owner_id: Option<PlayerId>, faction: Option<Faction>, unit_count: u32, status: TerritoryStatus, adjacent_territory_ids: Vec<TerritoryId> }` matches RFC-001 §7 attribute-for-attribute.
-- [ ] `Continent { id, map_id, name, control_bonus: u32 }` matches RFC-001 §7.
-- [ ] `Map { id, match_id, size_config }` — `size_config` is a forward dependency: this task defines the field but leaves its concrete type/shape pending. Task 1.10 (hand-authored presets) must approve the actual type before task 1.2 is done; alternatively, use a generic or enum variant large enough to accommodate every preset that task 1.10 will author, leaving the type fully specified in this task rather than deferred.
-- [ ] `GameAction { action_type: ActionType, actor_id: PlayerId, source_territory_id: TerritoryId, target_territory_id: Option<TerritoryId>, unit_count: u32 }`, with `ActionType = Deploy | Attack | Fortify | Concede | AccelerateCompile`, per RFC-001 §7.
-- [ ] `Faction` enum: `SiliconSwarm | SporeColony | CryoArchitects | MagmaForge`, per RFC-001 §2.
-- [ ] `TerritoryStatus` enum: `Active | Compiling`.
-- [ ] `PlayerId` is an opaque newtype — not RFC-001's `User` entity, no account/profile semantics — consistent with RFC-003 §6's ephemeral MVP identity model. The Engine must not assume a `User` row exists anywhere.
-- [ ] A `protocol` sub-module (`engine::protocol`, or a sibling crate if a concrete reason emerges during implementation to split it out — the sub-module form is the simpler default per RFC-002's own phrasing) holds every type above with `#[derive(Serialize, Deserialize)]` and `#[derive(TS)]`, kept separate from modules containing rule-evaluation logic.
-- [ ] Every ID type (`TerritoryId`, `ContinentId`, `MapId`, `PlayerId`) is a distinct newtype, not a bare `String`/`u64` — prevents accidentally passing, say, a `ContinentId` where a `TerritoryId` is expected.
-- [ ] Unit tests cover `serde` (de)serialization round-trips for every protocol type.
+- [x] `Territory { id, continent_id, owner_id: Option<PlayerId>, faction: Option<Faction>, unit_count: u32, status: TerritoryStatus, adjacent_territory_ids: Vec<TerritoryId> }` matches RFC-001 §7 attribute-for-attribute.
+- [x] `Continent { id, map_id, name, control_bonus: u32 }` matches RFC-001 §7.
+- [x] `Map { id, match_id, size_config }` — `size_config` is a forward dependency: this task defines the field but leaves its concrete type/shape pending. Task 1.10 (hand-authored presets) must approve the actual type before task 1.2 is done; alternatively, use a generic or enum variant large enough to accommodate every preset that task 1.10 will author, leaving the type fully specified in this task rather than deferred.
+- [x] `GameAction { action_type: ActionType, actor_id: PlayerId, source_territory_id: TerritoryId, target_territory_id: Option<TerritoryId>, unit_count: u32 }`, with `ActionType = Deploy | Attack | Fortify | Concede | AccelerateCompile`, per RFC-001 §7.
+- [x] `Faction` enum: `SiliconSwarm | SporeColony | CryoArchitects | MagmaForge`, per RFC-001 §2.
+- [x] `TerritoryStatus` enum: `Active | Compiling`.
+- [x] `PlayerId` is an opaque newtype — not RFC-001's `User` entity, no account/profile semantics — consistent with RFC-003 §6's ephemeral MVP identity model. The Engine must not assume a `User` row exists anywhere.
+- [x] A `protocol` sub-module (`engine::protocol`, or a sibling crate if a concrete reason emerges during implementation to split it out — the sub-module form is the simpler default per RFC-002's own phrasing) holds every type above with `#[derive(Serialize, Deserialize)]` and `#[derive(TS)]`, kept separate from modules containing rule-evaluation logic.
+- [x] Every ID type (`TerritoryId`, `ContinentId`, `MapId`, `PlayerId`) is a distinct newtype, not a bare `String`/`u64` — prevents accidentally passing, say, a `ContinentId` where a `TerritoryId` is expected. (A fifth newtype, `MatchId`, was also added for `Map.match_id` — see Notes.)
+- [x] Unit tests cover `serde` (de)serialization round-trips for every protocol type.
+
+## Notes (decisions made during implementation)
+
+- **ID representation:** ID newtypes wrap a minimal in-house `Ulid` value type (`engine::protocol::Ulid`) rather than the `ulid` crate. The `ulid` crate unconditionally depends on `web-time` (a wall-clock polyfill) on `wasm32-unknown-unknown` regardless of feature flags, which would violate the Engine's zero-wall-clock-time constraint via its dependency tree even though no generation function is ever called. The in-house type only parses/formats/compares the canonical 26-character Crockford Base32 form — the Engine never generates IDs, so no RNG or clock is needed.
+- **`Map.match_id`:** RFC-001 requires this field but the task's original ID-type list only named four newtypes and `MatchInstance` is out of scope here. Resolved by adding a fifth opaque newtype, `MatchId`, without modeling `MatchInstance` itself.
+- **`MapSizeConfig`:** implemented as an empty placeholder struct, doc-commented as reserved for a post-MVP procedural generator; task 1.10's hand-authored presets don't consume it.
 
 ## Out of scope
 
