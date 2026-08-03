@@ -40,5 +40,5 @@ Model [RFC-001 §7](../../../rfc/rfc-0001_terra-forge_product_design_specificati
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** [#3](https://github.com/garnizeh/terra-forge/pull/3)
