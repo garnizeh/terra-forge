@@ -13,14 +13,14 @@ Stand up the Cargo workspace and the `engine` crate itself — the empty vessel 
 
 ## Acceptance criteria
 
-- [ ] Cargo workspace created at the repo root with `engine` as a member crate.
-- [ ] `engine` crate compiles natively (`cargo build`) with zero warnings.
-- [ ] `engine` crate compiles to `wasm32-unknown-unknown` (via `wasm-pack build` or `cargo build --target wasm32-unknown-unknown`) with zero warnings.
-- [ ] `engine`'s dependency tree contains nothing that pulls in `std::net`, filesystem I/O beyond pure computation needs, or wall-clock time (`std::time::Instant`/`SystemTime`) — checked by reviewing the actual dependency tree, not just by intent, since a transitive dependency can violate this silently.
-- [ ] `Cargo.toml`'s release profile sets `strip = true`, `lto = true`, `opt-level = "z"` per RFC-002 §10 (the release *pipeline* that invokes `wasm-opt -Oz` is a later, deployment-adjacent concern — this task only owns the crate-level profile settings).
-- [ ] `engine-ci` GitHub Actions workflow skeleton exists and passes on the near-empty crate: `cargo test`, `cargo clippy -- -D warnings`, `cargo fmt --check`, and a `wasm-pack build` sanity check.
-- [ ] A pinned Rust toolchain (`rust-toolchain.toml` or equivalent) ensures the wasm target is consistently available, not dependent on whatever's locally installed.
-- [ ] A crate-level doc comment or README states the zero-I/O / zero-wall-clock-time constraint explicitly, so it's asserted up front rather than rediscovered after a violation.
+- [x] Cargo workspace created at the repo root with `engine` as a member crate.
+- [x] `engine` crate compiles natively (`cargo build`) with zero warnings.
+- [x] `engine` crate compiles to `wasm32-unknown-unknown` (via `wasm-pack build` or `cargo build --target wasm32-unknown-unknown`) with zero warnings.
+- [x] `engine`'s dependency tree contains nothing that pulls in `std::net`, filesystem I/O beyond pure computation needs, or wall-clock time (`std::time::Instant`/`SystemTime`) — checked by reviewing the actual dependency tree, not just by intent, since a transitive dependency can violate this silently.
+- [x] `Cargo.toml`'s release profile sets `strip = true`, `lto = true`, `opt-level = "z"` per RFC-002 §10 (the release *pipeline* that invokes `wasm-opt -Oz` is a later, deployment-adjacent concern — this task only owns the crate-level profile settings).
+- [x] `engine-ci` GitHub Actions workflow skeleton exists and passes on the near-empty crate: `cargo test`, `cargo clippy -- -D warnings`, `cargo fmt --check`, and a `wasm-pack build` sanity check.
+- [x] A pinned Rust toolchain (`rust-toolchain.toml` or equivalent) ensures the wasm target is consistently available, not dependent on whatever's locally installed.
+- [x] A crate-level doc comment or README states the zero-I/O / zero-wall-clock-time constraint explicitly, so it's asserted up front rather than rediscovered after a violation.
 
 ## Out of scope
 
@@ -32,5 +32,5 @@ None — first task in Phase 1.
 
 ## Status
 
-In review
+Done — merged
 **PR:** [#2](https://github.com/garnizeh/terra-forge/pull/2)
