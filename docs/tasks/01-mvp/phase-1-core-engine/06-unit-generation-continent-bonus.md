@@ -32,5 +32,5 @@ Implement Compile-phase unit generation — driven by territories controlled plu
 
 ## Status
 
-Not started
-**PR:** (none yet)
+In review
+**PR:** [#7](https://github.com/garnizeh/terra-forge/pull/7)
