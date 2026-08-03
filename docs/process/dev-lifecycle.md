@@ -48,6 +48,8 @@ Nothing gets built, named, or architected beyond what's explicitly planned in an
 
 This applies to scope, architecture/library choices, naming, and anything else not already written down and approved.
 
+**Format for presenting options mid-task:** plain text, structured as **Options / Tradeoffs / Recommendation** — not an interactive tool prompt (e.g. no `AskUserQuestion`-style multi-choice UI for this). List each candidate option, its tradeoffs, then a single explicit recommendation to anchor the discussion. The user may still ask clarifying questions before deciding — this format is about how the options are laid out, not a demand for an immediate answer.
+
 ## 6. Dependency and library currency — Context7
 
 Before introducing any new dependency — a Cargo crate, an npm package, a GitHub Action, a CLI tool — or writing code against the API of one already in use, check current docs and versions with the Context7 MCP tool rather than relying on training data. Training data goes stale, and this project has already hit real drift from it (e.g. the wasm-pack installer's upstream GitHub org moved in 2025, after `rustwasm` was archived).

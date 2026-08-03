@@ -12,6 +12,7 @@
 //!   deadlines are a Platform Server concern — the Engine only knows
 //!   phases, never deadlines.
 
+pub mod combat;
 pub mod faction_modifiers;
 pub mod match_state;
 pub mod protocol;
