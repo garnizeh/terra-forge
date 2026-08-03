@@ -98,6 +98,25 @@ impl MatchState {
             .is_some_and(|slot| slot.released)
     }
 
+    /// Whether `player_id` is one of this match's seated players at all —
+    /// task 1.7's `Concede` legality check needs this to reject a
+    /// non-participant, distinct from an already-released one.
+    pub fn is_participant(&self, player_id: PlayerId) -> bool {
+        self.players.iter().any(|slot| slot.id == player_id)
+    }
+
+    /// Test-only fixture: marks `player_id` released without going through
+    /// task 1.9's actual `release_to_neutral` transition (which doesn't
+    /// exist yet). Lets task 1.7's `legality` tests exercise the
+    /// already-released `Concede` rejection now; not part of the real API
+    /// and compiled out of non-test builds.
+    #[cfg(test)]
+    pub(crate) fn mark_released_for_test(&mut self, player_id: PlayerId) {
+        if let Some(slot) = self.players.iter_mut().find(|slot| slot.id == player_id) {
+            slot.released = true;
+        }
+    }
+
     pub fn fortify_used(&self) -> bool {
         self.fortify_used
     }
@@ -283,5 +302,17 @@ mod tests {
         assert!(!state.is_active_player_released());
         assert!(!state.is_player_released(p0));
         assert!(!state.is_player_released(p1));
+    }
+
+    #[test]
+    fn is_participant_true_only_for_seated_players() {
+        let p0 = player(1);
+        let p1 = player(2);
+        let stranger = player(99);
+        let state = MatchState::new(vec![p0, p1]);
+
+        assert!(state.is_participant(p0));
+        assert!(state.is_participant(p1));
+        assert!(!state.is_participant(stranger));
     }
 }
