@@ -39,5 +39,5 @@ Turn *timers*/deadlines (Phase 3, Platform Server). What triggers a skip to actu
 
 ## Status
 
-In review
+Merged
 **PR:** [#5](https://github.com/garnizeh/terra-forge/pull/5)
