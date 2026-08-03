@@ -16,6 +16,7 @@ The design documents live in:
 - [docs/rfc/rfc-0001_terra-forge_product_design_specification.md](docs/rfc/rfc-0001_terra-forge_product_design_specification.md) — product spec: 17 user journeys, full domain model, NFRs. Describes the **complete long-term product**, not what ships first.
 - [docs/rfc/rfc-0002_terra-forge_high_level_architecture.md](docs/rfc/rfc-0002_terra-forge_high_level_architecture.md) — technical architecture: technology per component, protocols, data/cache layer, deployment. Also **long-term**. Read before assuming any toolchain, framework, or infra — it records decisions already made so they don't get re-derived or re-asked.
 - [docs/rfc/rfc-0003_terra-forge_mvp_definition.md](docs/rfc/rfc-0003_terra-forge_mvp_definition.md) — **MVP scope: read this first before writing any code.** RFC-001/002 describe everything Terra-Forge is meant to become; RFC-003 draws the line for what actually ships first and marks every use case, entity, NFR, and technology as MVP or deferred, with reasons.
+- [docs/process/dev-lifecycle.md](docs/process/dev-lifecycle.md) — how work is planned and shipped (task docs, branches/PRs, ADRs, testing, the never-invent rule). See "Development workflow" below for the summary.
 
 ## What Terra-Forge is
 
@@ -94,3 +95,13 @@ Later phases assume earlier ones are solid — don't jump ahead (e.g. don't wire
 - **Server:** `cargo test` for service logic; integration tests via `testcontainers-rs` against a real ephemeral Postgres — not a mocked DB, given how state-sensitive this system is.
 - **Frontend:** Vitest + React Testing Library; Playwright for the React↔Wasm↔Canvas seam that unit tests can't cover.
 - **Cross-cutting:** the determinism check — server and client Engine states compared byte-for-byte (or by deterministic hash) after a full match. This is the test that validates the entire architectural bet.
+
+## Development workflow
+
+Full detail in [docs/process/dev-lifecycle.md](docs/process/dev-lifecycle.md). Summary:
+
+1. **Plan first.** Work is grouped by milestone (`docs/tasks/<NN>-<slug>/`, e.g. the current `01-mvp` covering build-order Phases 1–4) and, inside that, by build-order phase. Each milestone has a high-level `overview.md`; each task within a phase gets its own file. Each task maps to exactly **one pull request**, with explicit, testable acceptance criteria. Use the `plan-tasks` skill.
+2. **Execute one task at a time.** Branch → present the implementation plan for review and wait for approval → develop with tests as you go → check acceptance criteria → **ask before opening the PR**, even once criteria are met. Use the `start-task` skill.
+3. **Architecture changes get an ADR.** Any new or revised architectural decision is recorded in `docs/adr/` (Nygard format: Status/Context/Decision/Consequences) before or alongside the implementation that depends on it; amend the relevant RFC too if the decision changes what it states. Use the `adr` skill.
+4. **Test everything that can be tested** — see "Testing expectations" above; a task's acceptance criteria should make the required coverage explicit.
+5. **Never invent.** Nothing gets built, named, or architected beyond what an RFC, an approved task doc, or an approved ADR already covers. Hit a gap or ambiguity → stop, present the options with tradeoffs, and wait for a decision.
