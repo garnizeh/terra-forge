@@ -11,3 +11,5 @@
 //! - Zero wall-clock time: no `std::time::Instant` / `SystemTime`. Turn
 //!   deadlines are a Platform Server concern — the Engine only knows
 //!   phases, never deadlines.
+
+pub mod protocol;

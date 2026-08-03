@@ -14,6 +14,9 @@ dist-ssr/
 pkg/
 *.wasm
 
+# --- ts-rs generated TypeScript bindings ---
+bindings/
+
 # --- Environment / secrets ---
 .env
 .env.*
